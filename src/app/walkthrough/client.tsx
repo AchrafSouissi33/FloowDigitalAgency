@@ -168,12 +168,15 @@ export function WalkthroughClient({ initialClients }: { initialClients: any[] })
                       <div className={`w-2 h-2 rounded-full shrink-0 ${isAcknowledged ? "bg-emerald-500" : "bg-blue-600/40"}`}></div>
                       <span className="text-sm font-medium text-card-foreground truncate">{task.title}</span>
                       
-                      {/* AM: show the ACTUAL DB status. PM: show the in-session chosen status */}
-                      {role === "AM" ? (
+                      <div className="flex items-center gap-2">
                         <DbStatusBadge status={task.status} />
-                      ) : (
-                        getStatusBadge(taskStatuses[task.id])
-                      )}
+                        {role === "PM" && taskStatuses[task.id] && (
+                          <>
+                            <ChevronRight className="w-3 h-3 text-slate-400" />
+                            {getStatusBadge(taskStatuses[task.id])}
+                          </>
+                        )}
+                      </div>
 
                       {isAcknowledged && (
                         <Badge className="bg-emerald-500/20 text-emerald-700 border-emerald-500/30 text-[10px]">✓ Seen</Badge>
