@@ -79,13 +79,13 @@ export function LayoutShell({ children }: { children: React.ReactNode }) {
             {/* ROLE TOGGLE */}
             <div className="bg-white/40 p-1 rounded-xl flex items-center shadow-sm border border-white/50 mr-4">
               <button 
-                onClick={() => setRole("PM")}
+                onClick={() => { setRole("PM"); window.location.reload(); }}
                 className={`px-4 py-1.5 text-sm font-medium rounded-lg transition-all ${role === "PM" ? "bg-white shadow text-blue-600" : "text-muted-foreground hover:text-foreground"}`}
               >
                 Achraf (PM)
               </button>
               <button 
-                onClick={() => setRole("AM")}
+                onClick={() => { setRole("AM"); window.location.reload(); }}
                 className={`px-4 py-1.5 text-sm font-medium rounded-lg transition-all ${role === "AM" ? "bg-white shadow text-blue-600" : "text-muted-foreground hover:text-foreground"}`}
               >
                 Saif (AM)
