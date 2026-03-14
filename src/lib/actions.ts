@@ -5,7 +5,34 @@ import { revalidatePath } from 'next/cache';
 import { checkAndMarkStaleTasks } from './utils';
 
 export async function getClients() {
-  return await prisma.client.findMany();
+  return await prisma.client.findMany({
+    where: { is_archived: false },
+    include: {
+      _count: {
+        select: { tasks: { where: { is_archived: false } } }
+      }
+    }
+  });
+}
+
+export async function archiveClient(clientId: string) {
+  await prisma.client.update({
+    where: { id: clientId },
+    data: { is_archived: true }
+  });
+  revalidatePath('/clients/all');
+  revalidatePath('/dashboard');
+}
+
+export async function getArchivedClients() {
+  return await prisma.client.findMany({
+    where: { is_archived: true },
+    include: {
+      _count: {
+        select: { tasks: { where: { is_archived: false } } }
+      }
+    }
+  });
 }
 
 export async function getClientWithTasks(clientId: string) {

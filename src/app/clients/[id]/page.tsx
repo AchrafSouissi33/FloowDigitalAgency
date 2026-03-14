@@ -1,8 +1,10 @@
-import { getClientWithTasks, getClients } from "@/lib/actions"
+import { getClientWithTasks, getClients, getArchivedClients, archiveClient } from "@/lib/actions"
 import { Card, CardHeader } from "@/components/ui/card"
 import { AddTaskModal } from "./add-task-modal"
 import { TaskGrid } from "./task-grid"
 import { EditClientModal } from "./edit-client-modal"
+import { Trash2, Archive } from "lucide-react"
+import { Button } from "@/components/ui/button"
 
 export default async function ClientPage(props: { 
   params: Promise<{ id: string }>;
@@ -13,43 +15,109 @@ export default async function ClientPage(props: {
   const q = searchParams.q as string | undefined;
   const clientId = params.id
   
-  // Quick hack to allow /clients/all to just redirect or show the first client for now
+  // All clients view
   if (clientId === 'all') {
     let clients = await getClients();
+    const archivedClients = await getArchivedClients();
+
     if (q) {
       clients = clients.filter(c => c.name.toLowerCase().includes(q.toLowerCase()));
     }
-    if (clients.length > 0) {
-      return (
-        <div className="p-8">
+
+    return (
+      <div className="p-8 space-y-12">
+        <div>
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-bold">All Clients {q && `(Searching: "${q}")`}</h2>
+            <h2 className="text-2xl font-bold">Active Clients {q && `(Searching: "${q}")`}</h2>
           </div>
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-            {clients.map(c => (
-              <a key={c.id} href={`/clients/${c.id}`}>
-                <Card className="bg-white hover:shadow-md cursor-pointer transition-all border border-slate-200 shadow-sm rounded-2xl overflow-hidden group">
-                  <div className="h-1.5 w-full" style={{ backgroundColor: (c as any).card_color || '#3b82f6' }} />
-                  <CardHeader className="flex flex-row items-center gap-4">
-                    {(c as any).logo_url ? (
-                      <img src={(c as any).logo_url} alt={c.name} className="w-10 h-10 object-contain rounded-lg bg-slate-50 border border-slate-100 p-1 shrink-0" />
-                    ) : (
-                      <div className="w-10 h-10 rounded-lg flex items-center justify-center text-white font-bold text-sm shrink-0" style={{ backgroundColor: (c as any).card_color || '#3b82f6' }}>
-                        {c.name.charAt(0).toUpperCase()}
+          <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+            {clients.map(c => {
+              const taskCount = (c as any)._count?.tasks || 0;
+              return (
+                <div key={c.id} className="group relative h-full">
+                  <a href={`/clients/${c.id}`}>
+                    <Card className="bg-white hover:shadow-lg cursor-pointer transition-all border border-slate-200 shadow-sm rounded-3xl overflow-hidden h-full flex flex-col">
+                      <div className="h-2 w-full" style={{ backgroundColor: (c as any).card_color || '#3b82f6' }} />
+                      <CardHeader className="flex flex-row items-center gap-4 flex-1">
+                        {(c as any).logo_url ? (
+                          <img src={(c as any).logo_url} alt={c.name} className="w-12 h-12 object-contain rounded-xl bg-slate-50 border border-slate-100 p-1.5 shrink-0" />
+                        ) : (
+                          <div className="w-12 h-12 rounded-xl flex items-center justify-center text-white font-bold text-lg shrink-0 shadow-sm" style={{ backgroundColor: (c as any).card_color || '#3b82f6' }}>
+                            {c.name.charAt(0).toUpperCase()}
+                          </div>
+                        )}
+                        <div className="min-w-0 flex-1">
+                          <h3 className="text-lg font-bold text-slate-900 truncate">{c.name}</h3>
+                          <p className="text-sm text-slate-500 truncate">{c.yearly_goals}</p>
+                        </div>
+                      </CardHeader>
+                      <div className="px-6 py-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between mt-auto">
+                         <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-500 bg-white border border-slate-200 px-2.5 py-1 rounded-full shadow-sm">
+                           <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+                           {taskCount} {taskCount === 1 ? 'Task' : 'Tasks'}
+                         </div>
+                         <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest group-hover:text-blue-600 transition-colors">View Details →</p>
                       </div>
-                    )}
-                    <div>
-                      <h3 className="text-lg font-bold text-slate-900">{c.name}</h3>
-                      <p className="text-sm text-slate-500">{c.yearly_goals}</p>
-                    </div>
-                  </CardHeader>
-                </Card>
-              </a>
-            ))}
+                    </Card>
+                  </a>
+                  <form 
+                    action={async () => {
+                      'use server';
+                      await archiveClient(c.id);
+                    }}
+                    className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    <button 
+                      type="submit"
+                      className="p-2 bg-white/90 backdrop-blur-sm border border-slate-200 rounded-xl text-slate-400 hover:text-red-600 hover:border-red-200 shadow-sm transition-all"
+                      title="Archive Client"
+                    >
+                      <Archive className="w-4 h-4" />
+                    </button>
+                  </form>
+                </div>
+              )
+            })}
+            {clients.length === 0 && (
+              <div className="col-span-full py-12 text-center bg-slate-50 rounded-3xl border border-dashed border-slate-300">
+                <p className="text-slate-500">No active clients found.</p>
+              </div>
+            )}
           </div>
         </div>
-      )
-    }
+
+        {archivedClients.length > 0 && (
+          <div className="opacity-70 hover:opacity-100 transition-opacity">
+            <div className="flex items-center gap-2 mb-6 border-b border-slate-200 pb-2">
+              <Archive className="w-5 h-5 text-slate-400" />
+              <h2 className="text-sm font-bold text-slate-600 uppercase tracking-wider">Archived Clients</h2>
+            </div>
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+              {archivedClients.map(c => (
+                <a key={c.id} href={`/clients/${c.id}`} className="group">
+                  <Card className="bg-slate-50/50 hover:bg-white hover:shadow-md cursor-pointer transition-all border border-slate-200 shadow-sm rounded-2xl overflow-hidden flex flex-col grayscale opacity-60 group-hover:grayscale-0 group-hover:opacity-100">
+                    <div className="h-1 w-full bg-slate-300 group-hover:bg-blue-300" />
+                    <div className="p-4 flex items-center gap-3">
+                      {(c as any).logo_url ? (
+                        <img src={(c as any).logo_url} alt={c.name} className="w-8 h-8 object-contain rounded-lg bg-white border border-slate-200 p-1 shrink-0" />
+                      ) : (
+                        <div className="w-8 h-8 rounded-lg flex items-center justify-center text-white font-bold text-xs shrink-0" style={{ backgroundColor: (c as any).card_color || '#cbd5e1' }}>
+                          {c.name.charAt(0).toUpperCase()}
+                        </div>
+                      )}
+                      <div className="min-w-0">
+                        <h3 className="text-sm font-bold text-slate-700 truncate">{c.name}</h3>
+                        <p className="text-[10px] text-slate-400 truncate">{(c as any)._count?.tasks || 0} Tasks</p>
+                      </div>
+                    </div>
+                  </Card>
+                </a>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    );
   }
 
   const client = await getClientWithTasks(clientId) as any

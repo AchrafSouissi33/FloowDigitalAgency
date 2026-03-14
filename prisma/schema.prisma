@@ -13,6 +13,7 @@ model Client {
   yearly_goals String
   logo_url     String?
   card_color   String?   @default("#3b82f6")
+  is_archived  Boolean   @default(false)
   tasks        Task[]
 }
 
