@@ -1,4 +1,4 @@
-import { getClientWithTasks, getClients, getArchivedClients, archiveClient } from "@/lib/actions"
+import { getClientWithTasks, getClients, getArchivedClients, archiveClient, unarchiveClient } from "@/lib/actions"
 import { Card, CardHeader } from "@/components/ui/card"
 import { AddTaskModal } from "./add-task-modal"
 import { TaskGrid } from "./task-grid"
@@ -97,18 +97,36 @@ export default async function ClientPage(props: {
                 <a key={c.id} href={`/clients/${c.id}`} className="group">
                   <Card className="bg-slate-50/50 hover:bg-white hover:shadow-md cursor-pointer transition-all border border-slate-200 shadow-sm rounded-2xl overflow-hidden flex flex-col grayscale opacity-60 group-hover:grayscale-0 group-hover:opacity-100">
                     <div className="h-1 w-full bg-slate-300 group-hover:bg-blue-300" />
-                    <div className="p-4 flex items-center gap-3">
-                      {(c as any).logo_url ? (
-                        <img src={(c as any).logo_url} alt={c.name} className="w-8 h-8 object-contain rounded-lg bg-white border border-slate-200 p-1 shrink-0" />
-                      ) : (
-                        <div className="w-8 h-8 rounded-lg flex items-center justify-center text-white font-bold text-xs shrink-0" style={{ backgroundColor: (c as any).card_color || '#cbd5e1' }}>
-                          {c.name.charAt(0).toUpperCase()}
+                    <div className="p-4 flex items-center justify-between group/archived overflow-hidden">
+                      <div className="flex items-center gap-3 min-w-0 flex-1">
+                        {(c as any).logo_url ? (
+                          <img src={(c as any).logo_url} alt={c.name} className="w-8 h-8 object-contain rounded-lg bg-white border border-slate-200 p-1 shrink-0" />
+                        ) : (
+                          <div className="w-8 h-8 rounded-lg flex items-center justify-center text-white font-bold text-xs shrink-0" style={{ backgroundColor: (c as any).card_color || '#cbd5e1' }}>
+                            {c.name.charAt(0).toUpperCase()}
+                          </div>
+                        )}
+                        <div className="min-w-0 flex-1">
+                          <h3 className="text-sm font-bold text-slate-700 truncate">{c.name}</h3>
+                          <p className="text-[10px] text-slate-400 truncate">{(c as any)._count?.tasks || 0} Tasks</p>
                         </div>
-                      )}
-                      <div className="min-w-0">
-                        <h3 className="text-sm font-bold text-slate-700 truncate">{c.name}</h3>
-                        <p className="text-[10px] text-slate-400 truncate">{(c as any)._count?.tasks || 0} Tasks</p>
                       </div>
+                      
+                      <form 
+                        action={async () => {
+                          'use server';
+                          await unarchiveClient(c.id);
+                        }}
+                        className="ml-2 opacity-0 group-hover/archived:opacity-100 transition-opacity shrink-0"
+                      >
+                        <button 
+                          type="submit"
+                          className="p-1.5 bg-white border border-slate-200 rounded-lg text-slate-400 hover:text-blue-600 hover:border-blue-200 shadow-sm transition-all"
+                          title="Restore Client"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                        </button>
+                      </form>
                     </div>
                   </Card>
                 </a>

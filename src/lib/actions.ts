@@ -24,6 +24,15 @@ export async function archiveClient(clientId: string) {
   revalidatePath('/dashboard');
 }
 
+export async function unarchiveClient(clientId: string) {
+  await prisma.client.update({
+    where: { id: clientId },
+    data: { is_archived: false }
+  });
+  revalidatePath('/clients/all');
+  revalidatePath('/dashboard');
+}
+
 export async function getArchivedClients() {
   return await prisma.client.findMany({
     where: { is_archived: true },
