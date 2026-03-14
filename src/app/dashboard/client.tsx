@@ -74,7 +74,7 @@ export function DashboardClient() {
           <h2 className="text-2xl font-bold tracking-tight text-card-foreground">Action Required</h2>
           <p className="text-muted-foreground text-sm mt-1">
             {role === "PM" 
-              ? "These tasks haven't been updated in 24 business hours." 
+              ? "Stale tasks and tasks approved by the Account Manager." 
               : "These tasks are blocked or awaiting your review."}
           </p>
         </div>
@@ -104,6 +104,7 @@ export function DashboardClient() {
                   <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-md ${
                     task.status === 'Blocked' ? 'bg-red-500/20 text-red-600' : 
                     task.status === 'Ready for AM Review' ? 'bg-[#eab308]/20 text-[#eab308]' :
+                    task.status === 'You Can Proceed' ? 'bg-violet-500/20 text-violet-700' :
                     'bg-sky-500/20 text-sky-700'
                   }`}>
                     {task.status}
@@ -142,6 +143,7 @@ export function DashboardClient() {
               selectedTask.status === 'Done' ? 'bg-emerald-500/10 text-emerald-700 border border-emerald-500/20' :
               selectedTask.status === 'In Progress' ? 'bg-sky-500/10 text-sky-700 border border-sky-500/20' :
               selectedTask.status === 'Ready for AM Review' ? 'bg-amber-500/10 text-amber-700 border border-amber-500/20' :
+              selectedTask.status === 'You Can Proceed' ? 'bg-violet-500/10 text-violet-700 border border-violet-500/20' :
               'bg-slate-100 text-slate-500 border border-slate-200'
             }`}>
               {selectedTask.status}
@@ -168,6 +170,14 @@ export function DashboardClient() {
                 onClick={() => handleStatusUpdate(selectedTask.id, "Done")}
                 className={`text-xs rounded-xl border-emerald-500/30 text-emerald-700 hover:bg-emerald-500/10 ${selectedTask.status === "Done" ? "bg-emerald-500/20" : "bg-white"}`}
               >Done</Button>
+              {role === "AM" && (
+                <Button variant="outline" size="sm"
+                  onClick={() => {
+                    handleStatusUpdate(selectedTask.id, "You Can Proceed")
+                  }}
+                  className={`text-xs rounded-xl border-violet-500/30 text-violet-700 hover:bg-violet-500/10 ${selectedTask.status === "You Can Proceed" ? "bg-violet-500/20" : "bg-white"}`}
+                >You Can Proceed</Button>
+              )}
             </div>
 
             {/* Notes */}

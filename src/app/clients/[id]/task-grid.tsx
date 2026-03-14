@@ -7,8 +7,10 @@ import { Button } from "@/components/ui/button"
 import { Modal } from "@/components/ui/modal"
 import { updateTaskStatus, updateTaskDetails, archiveTask, addComment } from "@/lib/actions"
 import ReactMarkdown from "react-markdown"
+import { useRole } from "@/components/role-provider"
 
 export function TaskGrid({ client, tasks }: { client: any, tasks: any[] }) {
+  const { role } = useRole()
   const [selectedTask, setSelectedTask] = useState<any | null>(null)
   const [isEditingTitle, setIsEditingTitle] = useState(false)
   const [isEditingNotes, setIsEditingNotes] = useState(false)
@@ -100,6 +102,7 @@ export function TaskGrid({ client, tasks }: { client: any, tasks: any[] }) {
                   task.status === 'Blocked' ? 'bg-red-500/10 text-red-600 border border-red-500/20' : 
                   task.status === 'Done' ? 'bg-emerald-500/10 text-emerald-700 border border-emerald-500/20' :
                   task.status === 'In Progress' ? 'bg-sky-500/10 text-sky-700 border border-sky-500/20' :
+                  task.status === 'You Can Proceed' ? 'bg-violet-500/10 text-violet-700 border border-violet-500/20' :
                   'bg-slate-100 text-slate-500 border border-slate-200'
                 }`}>
                   {task.status}
@@ -141,6 +144,7 @@ export function TaskGrid({ client, tasks }: { client: any, tasks: any[] }) {
               selectedTask?.status === 'Blocked' ? 'bg-red-500/10 text-red-600 border border-red-500/20' : 
               selectedTask?.status === 'Done' ? 'bg-emerald-500/10 text-emerald-700 border border-emerald-500/20' :
               selectedTask?.status === 'In Progress' ? 'bg-sky-500/10 text-sky-700 border border-sky-500/20' :
+              selectedTask?.status === 'You Can Proceed' ? 'bg-violet-500/10 text-violet-700 border border-violet-500/20' :
               'bg-slate-100 text-slate-500 border border-slate-200'
             }`}>
               {selectedTask?.status}
@@ -200,6 +204,18 @@ export function TaskGrid({ client, tasks }: { client: any, tasks: any[] }) {
               >
                 Done
               </Button>
+              {role === "AM" && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleStatusUpdate(selectedTask.id, "proceed", "You Can Proceed")}
+                  className={`text-xs rounded-xl border-violet-500/30 text-violet-700 hover:bg-violet-500/10 ${
+                    selectedTask.status === "You Can Proceed" ? "bg-violet-500/20" : "bg-white"
+                  }`}
+                >
+                  You Can Proceed
+                </Button>
+              )}
               </div>
               <Button
                 variant="ghost" 

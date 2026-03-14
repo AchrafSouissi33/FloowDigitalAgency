@@ -61,7 +61,10 @@ export async function getDashboardTasks(role: 'PM' | 'AM') {
   } else if (role === 'PM') {
     return await prisma.task.findMany({
       where: {
-        is_stale: true
+        OR: [
+          { is_stale: true },
+          { status: 'You Can Proceed' }
+        ]
       },
       include: includeRelations
     });

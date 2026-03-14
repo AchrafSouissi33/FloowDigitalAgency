@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Grid3X3, Briefcase, User, Search, Bell } from "lucide-react"
+import { Grid3X3, Play, User, Search, Bell } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { useRole } from "./role-provider"
@@ -14,7 +14,7 @@ export function LayoutShell({ children }: { children: React.ReactNode }) {
 
   const navItems = [
     { icon: Grid3X3, label: "DASHBOARD", href: "/dashboard" },
-    { icon: Briefcase, label: "WALKTHROUGH", href: "/walkthrough" },
+    { icon: Play, label: "WALKTHROUGH", href: "/walkthrough" },
     { icon: User, label: "CLIENTS", href: "/clients/all" },
   ]
 
@@ -23,7 +23,10 @@ export function LayoutShell({ children }: { children: React.ReactNode }) {
       {/* Sidebar */}
       <aside className="w-64 p-6 flex flex-col">
         <div className="backdrop-blur-xl bg-white/20 rounded-3xl p-6 flex-1 border border-white/30 shadow-xl flex flex-col">
-          <h1 className="text-xl font-bold tracking-tight text-card-foreground mb-8">Floow Digital Agency</h1>
+          <div className="mb-8">
+            <img src="https://floow.agency/wp-content/uploads/2022/04/Logo-final-7.png" alt="Floow" className="h-10 object-contain mb-3" />
+            <h1 className="text-xl font-bold tracking-tight text-card-foreground">Floow Digital Agency</h1>
+          </div>
           
           <nav className="space-y-1 flex-1">
             {navItems.map((item) => {

@@ -19,6 +19,7 @@ function DbStatusBadge({ status }: { status: string }) {
     "Done": "bg-emerald-500/10 text-emerald-700 border border-emerald-500/20",
     "In Progress": "bg-sky-500/10 text-sky-700 border border-sky-500/20",
     "Ready for AM Review": "bg-amber-500/10 text-amber-700 border border-amber-500/20",
+    "You Can Proceed": "bg-violet-500/10 text-violet-700 border border-violet-500/20",
     "Not Started": "bg-slate-100 text-slate-500 border border-slate-200",
   }
   return (
@@ -192,6 +193,17 @@ export function WalkthroughClient({ initialClients }: { initialClients: any[] })
                           }`}
                         >
                           {isAcknowledged ? "✓ OK" : "OK"}
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={async () => {
+                            await updateTaskStatus(task.id, "You Can Proceed", "AM approved — you can proceed.");
+                            handleAcknowledge(task.id);
+                          }}
+                          className="text-xs rounded-xl border-violet-500/30 text-violet-700 hover:bg-violet-500/10"
+                        >
+                          You Can Proceed
                         </Button>
                       </div>
                     ) : (
@@ -406,6 +418,19 @@ export function WalkthroughClient({ initialClients }: { initialClients: any[] })
                 }`}
               >
                 Done
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={async () => {
+                  await updateTaskStatus(selectedTask.id, "You Can Proceed", "AM approved — you can proceed.");
+                  setSelectedTask((prev: any) => prev ? { ...prev, status: "You Can Proceed" } : prev);
+                }}
+                className={`text-xs rounded-xl border-violet-500/30 text-violet-700 hover:bg-violet-500/10 ${
+                  selectedTask.status === "You Can Proceed" ? "bg-violet-500/20" : "bg-white"
+                }`}
+              >
+                You Can Proceed
               </Button>
             </div>
 
