@@ -1,0 +1,53 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model Client {
+  id           String    @id @default(uuid())
+  name         String
+  yearly_goals String
+  logo_url     String?
+  card_color   String?   @default("#3b82f6")
+  tasks        Task[]
+}
+
+model Task {
+  id              String    @id @default(uuid())
+  client_id       String
+  title           String
+  notes           String?
+  status          String
+  last_updated_at DateTime  @default(now())
+  is_stale        Boolean   @default(false)
+  is_archived     Boolean   @default(false)
+  
+  client          Client    @relation(fields: [client_id], references: [id])
+  logs            TaskLog[]
+  comments        Comment[]
+}
+
+model TaskLog {
+  id              String    @id @default(uuid())
+  task_id         String
+  previous_status String
+  new_status      String
+  note            String?
+  timestamp       DateTime  @default(now())
+  
+  task            Task      @relation(fields: [task_id], references: [id])
+}
+
+model Comment {
+  id        String   @id @default(uuid())
+  task_id   String
+  author    String
+  content   String
+  timestamp DateTime @default(now())
+  
+  task      Task     @relation(fields: [task_id], references: [id])
+}
