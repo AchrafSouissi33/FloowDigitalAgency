@@ -250,3 +250,29 @@ export async function archiveTask(taskId: string) {
   revalidatePath('/walkthrough')
   return task
 }
+
+export async function unarchiveTask(taskId: string) {
+  const task = await prisma.task.update({
+    where: { id: taskId },
+    data: { is_archived: false }
+  })
+  
+  revalidatePath('/clients/[id]', 'page')
+  revalidatePath('/dashboard')
+  revalidatePath('/walkthrough')
+  return task
+}
+
+export async function deleteTask(taskId: string) {
+  // Related logs and comments should be handled via database cascades, 
+  // but we'll ensure they are deleted if cascades aren't fully set up.
+  await prisma.$transaction([
+    prisma.taskLog.deleteMany({ where: { task_id: taskId } }),
+    prisma.comment.deleteMany({ where: { task_id: taskId } }),
+    prisma.task.delete({ where: { id: taskId } })
+  ])
+  
+  revalidatePath('/clients/[id]', 'page')
+  revalidatePath('/dashboard')
+  revalidatePath('/walkthrough')
+}

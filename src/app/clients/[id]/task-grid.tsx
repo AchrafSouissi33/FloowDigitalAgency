@@ -5,7 +5,7 @@ import { Card, CardHeader, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Modal } from "@/components/ui/modal"
-import { updateTaskStatus, updateTaskDetails, archiveTask, addComment } from "@/lib/actions"
+import { updateTaskStatus, updateTaskDetails, archiveTask, unarchiveTask, deleteTask, addComment } from "@/lib/actions"
 import ReactMarkdown from "react-markdown"
 import { useRole } from "@/components/role-provider"
 
@@ -72,6 +72,24 @@ export function TaskGrid({ client, tasks }: { client: any, tasks: any[] }) {
     }
   }
 
+  const handleUnarchiveTask = async (taskId: string) => {
+    try {
+      await unarchiveTask(taskId)
+    } catch (err) {
+      console.error(err)
+    }
+  }
+
+  const handleDeleteTask = async () => {
+    if (!selectedTask || !confirm("DANGER: Are you sure you want to PERMANENTLY delete this task? This action cannot be undone.")) return
+    try {
+      await deleteTask(selectedTask.id)
+      setSelectedTask(null)
+    } catch (err) {
+      console.error(err)
+    }
+  }
+
   const handleAddComment = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!newCommentContent.trim() || !selectedTask) return
@@ -90,46 +108,61 @@ export function TaskGrid({ client, tasks }: { client: any, tasks: any[] }) {
     <>
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
         {tasks.map(task => (
-          <Card 
-            key={task.id} 
-            className="bg-white shadow-sm rounded-3xl border border-slate-200 overflow-hidden hover:shadow-md hover:border-blue-200 transition-all cursor-pointer group flex flex-col h-full"
-            onClick={() => openTaskModal(task)}
-          >
-            <CardHeader className="bg-slate-50/50 pb-4 pt-6 px-6 border-b border-slate-100 group-hover:bg-blue-50/30 transition-colors">
-              <div className="flex items-start justify-between gap-4">
-                <h3 className="font-bold text-lg text-slate-900 leading-tight line-clamp-2">{task.title}</h3>
-                <span className={`text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full shrink-0 ${
-                  task.status === 'Blocked' ? 'bg-red-500/10 text-red-600 border border-red-500/20' : 
-                  task.status === 'Done' ? 'bg-emerald-500/10 text-emerald-700 border border-emerald-500/20' :
-                  task.status === 'In Progress' ? 'bg-sky-500/10 text-sky-700 border border-sky-500/20' :
-                  task.status === 'You Can Proceed' ? 'bg-violet-500/10 text-violet-700 border border-violet-500/20' :
-                  'bg-slate-100 text-slate-500 border border-slate-200'
-                }`}>
-                  {task.status}
-                </span>
-              </div>
-            </CardHeader>
-            <CardContent className="px-6 py-5 flex-1 flex flex-col justify-between">
-              <div>
-                {(task as any).notes ? (
-                  <p className="text-sm text-slate-600 line-clamp-3 mb-4">{(task as any).notes}</p>
-                ) : (
-                  <p className="text-sm text-slate-400 italic line-clamp-3 mb-4">No notes added.</p>
-                )}
-              </div>
-              
-              <div className="flex items-center gap-4 text-xs font-medium text-slate-500 pt-4 border-t border-slate-100 mt-auto">
-                <div className="flex items-center gap-1.5">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-                  {task.comments?.length || 0}
+          <div key={task.id} className="relative group/wrapper">
+            <Card 
+              className="bg-white shadow-sm rounded-3xl border border-slate-200 overflow-hidden hover:shadow-md hover:border-blue-200 transition-all cursor-pointer group flex flex-col h-full"
+              onClick={() => openTaskModal(task)}
+            >
+              <CardHeader className="bg-slate-50/50 pb-4 pt-6 px-6 border-b border-slate-100 group-hover:bg-blue-50/30 transition-colors">
+                <div className="flex items-start justify-between gap-4">
+                  <h3 className="font-bold text-lg text-slate-900 leading-tight line-clamp-2">{task.title}</h3>
+                  <span className={`text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full shrink-0 ${
+                    task.status === 'Blocked' ? 'bg-red-500/10 text-red-600 border border-red-500/20' : 
+                    task.status === 'Done' ? 'bg-emerald-500/10 text-emerald-700 border border-emerald-500/20' :
+                    task.status === 'In Progress' ? 'bg-sky-500/10 text-sky-700 border border-sky-500/20' :
+                    task.status === 'You Can Proceed' ? 'bg-violet-500/10 text-violet-700 border border-violet-500/20' :
+                    'bg-slate-100 text-slate-500 border border-slate-200'
+                  }`}>
+                    {task.status}
+                  </span>
                 </div>
-                <div className="flex items-center gap-1.5">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 8v4l3 3m6-3a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"/></svg>
-                  {new Date(task.last_updated_at).toLocaleDateString()}
+              </CardHeader>
+              <CardContent className="px-6 py-5 flex-1 flex flex-col justify-between">
+                <div>
+                  {(task as any).notes ? (
+                    <p className="text-sm text-slate-600 line-clamp-3 mb-4">{(task as any).notes}</p>
+                  ) : (
+                    <p className="text-sm text-slate-400 italic line-clamp-3 mb-4">No notes added.</p>
+                  )}
                 </div>
-              </div>
-            </CardContent>
-          </Card>
+                
+                <div className="flex items-center gap-4 text-xs font-medium text-slate-500 pt-4 border-t border-slate-100 mt-auto">
+                  <div className="flex items-center gap-1.5">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                    {task.comments?.length || 0}
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 8v4l3 3m6-3a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"/></svg>
+                    {new Date(task.last_updated_at).toLocaleDateString()}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            {task.is_archived && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleUnarchiveTask(task.id);
+                }}
+                className="absolute top-4 right-4 opacity-0 group-hover/wrapper:opacity-100 transition-opacity bg-white/90 backdrop-blur-sm border-blue-200 text-blue-600 hover:bg-blue-50 h-8 px-2 rounded-xl"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                Restore
+              </Button>
+            )}
+          </div>
         ))}
       </div>
 
@@ -217,14 +250,24 @@ export function TaskGrid({ client, tasks }: { client: any, tasks: any[] }) {
                 </Button>
               )}
               </div>
-              <Button
-                variant="ghost" 
-                size="sm" 
-                onClick={handleArchiveTask}
-                className="text-xs text-red-600 hover:text-red-700 hover:bg-red-50"
-              >
-                Archive Task
-              </Button>
+              <div className="flex flex-wrap items-center gap-2">
+                <Button
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={handleArchiveTask}
+                  className="text-xs text-amber-600 hover:text-amber-700 hover:bg-amber-50"
+                >
+                  Archive Task
+                </Button>
+                <Button
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={handleDeleteTask}
+                  className="text-xs text-red-600 hover:text-red-700 hover:bg-red-50"
+                >
+                  Delete Task
+                </Button>
+              </div>
             </div>
 
             {/* Notes Section */}
