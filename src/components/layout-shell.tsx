@@ -7,10 +7,16 @@ import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { useRole } from "./role-provider"
 import { AddClientModal } from "./add-client-modal"
+import { IdentityGate } from "./identity-gate"
+import { LogOut } from "lucide-react"
 
 export function LayoutShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
-  const { role, setRole } = useRole()
+  const { role, setRole, isAuthenticated, logout } = useRole()
+
+  if (!isAuthenticated) {
+    return <IdentityGate />
+  }
 
   const navItems = [
     { icon: Grid3X3, label: "DASHBOARD", href: "/dashboard" },
@@ -105,6 +111,16 @@ export function LayoutShell({ children }: { children: React.ReactNode }) {
             </form>
 
             <AddClientModal />
+
+            <Button 
+              variant="ghost" 
+              size="icon"
+              onClick={logout}
+              className="rounded-xl border border-white/50 bg-white/40 hover:bg-red-50 hover:text-red-600 transition-all shadow-sm"
+              title="Logout"
+            >
+              <LogOut className="w-4 h-4" />
+            </Button>
           </div>
         </div>
 
