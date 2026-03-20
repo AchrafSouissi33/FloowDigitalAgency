@@ -36,7 +36,7 @@ export function IdentityGate() {
             <ShieldCheck size={32} />
           </div>
           <h1 className="text-3xl font-bold tracking-tight text-white mb-2">Security Hub</h1>
-          <p className="text-slate-400">Confirm your identity to access Floow Digital Agency</p>
+          <p className="text-slate-400">Confirm your identity to access Floow Digital Agency Dashboard</p>
         </div>
 
         {!selectedRole ? (

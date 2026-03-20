@@ -7,7 +7,7 @@ import { LayoutShell } from "@/components/layout-shell";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Agency Sync",
+  title: "Floow Digital Agency Dashboard",
   description: "Task updates between PM and AM",
 };
 

@@ -32,7 +32,7 @@ export function LayoutShell({ children }: { children: React.ReactNode }) {
         <div className="backdrop-blur-xl bg-white/20 rounded-3xl p-6 flex-1 border border-white/30 shadow-xl flex flex-col">
           <div className="mb-8">
             <img src="https://floow.agency/wp-content/uploads/2022/04/Logo-final-7.png" alt="Floow" className="h-10 object-contain mb-3" />
-            <h1 className="text-xl font-bold tracking-tight text-card-foreground">Floow Digital Agency</h1>
+            <h1 className="text-xl font-bold tracking-tight text-card-foreground">Floow Digital Agency Dashboard</h1>
           </div>
           
           <nav className="space-y-1 flex-1">
