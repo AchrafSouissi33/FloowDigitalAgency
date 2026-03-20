@@ -79,6 +79,26 @@ export async function getWalkthroughTasks() {
   });
 }
 
+export async function getOpenTasksByClient() {
+  return await prisma.client.findMany({
+    where: {
+      is_archived: false,
+      tasks: {
+        some: { is_archived: false }
+      }
+    },
+    include: {
+      tasks: {
+        where: { is_archived: false },
+        include: {
+          comments: { orderBy: { timestamp: 'asc' as const } },
+          logs: { orderBy: { timestamp: 'desc' as const } }
+        }
+      }
+    }
+  });
+}
+
 export async function getDashboardTasks(role: 'PM' | 'AM') {
   // Trigger staleness check simulating chron job before fetching the PM tasks
   if (role === 'PM') {
@@ -273,6 +293,22 @@ export async function deleteTask(taskId: string) {
   ])
   
   revalidatePath('/clients/[id]', 'page')
+  revalidatePath('/dashboard')
+  revalidatePath('/walkthrough')
+}
+
+export async function deleteClient(clientId: string) {
+  const tasks = await prisma.task.findMany({ where: { client_id: clientId }, select: { id: true } })
+  const taskIds = tasks.map(t => t.id)
+  
+  await prisma.$transaction([
+    prisma.taskLog.deleteMany({ where: { task_id: { in: taskIds } } }),
+    prisma.comment.deleteMany({ where: { task_id: { in: taskIds } } }),
+    prisma.task.deleteMany({ where: { client_id: clientId } }),
+    prisma.client.delete({ where: { id: clientId } })
+  ])
+  
+  revalidatePath('/clients/all')
   revalidatePath('/dashboard')
   revalidatePath('/walkthrough')
 }

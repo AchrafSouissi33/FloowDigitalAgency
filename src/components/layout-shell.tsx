@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Grid3X3, Play, User, Search, Bell } from "lucide-react"
+import { Grid3X3, Play, User, Search, Bell, ListTodo } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { useRole } from "./role-provider"
@@ -16,6 +16,7 @@ export function LayoutShell({ children }: { children: React.ReactNode }) {
     { icon: Grid3X3, label: "DASHBOARD", href: "/dashboard" },
     { icon: Play, label: "WALKTHROUGH", href: "/walkthrough" },
     { icon: User, label: "CLIENTS", href: "/clients/all" },
+    { icon: ListTodo, label: "TASKS", href: "/tasks" },
   ]
 
   return (
@@ -104,10 +105,6 @@ export function LayoutShell({ children }: { children: React.ReactNode }) {
             </form>
 
             <AddClientModal />
-            
-            <Button variant="outline" size="icon" className="rounded-xl bg-card border-border hover:bg-accent h-10 w-10 border-white/50">
-              <Bell className="w-4 h-4" />
-            </Button>
           </div>
         </div>
 

@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Modal } from "@/components/ui/modal"
-import { updateTaskStatus, addComment } from "@/lib/actions"
+import { updateTaskStatus, addComment, archiveTask } from "@/lib/actions"
 import ReactMarkdown from 'react-markdown'
 import { useRouter } from "next/navigation"
 
@@ -423,6 +423,7 @@ export function WalkthroughClient({ initialClients }: { initialClients: any[] })
                     await handleStatusUpdate(selectedTask.id, "done", "Done");
                   } else {
                     await updateTaskStatus(selectedTask.id, "Done", "Marked as completed.");
+                    await archiveTask(selectedTask.id);
                   }
                   setSelectedTask((prev: any) => prev ? { ...prev, status: "Done" } : prev);
                 }}

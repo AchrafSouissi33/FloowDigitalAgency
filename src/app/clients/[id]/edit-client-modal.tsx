@@ -37,6 +37,15 @@ export function EditClientModal({ client }: { client: any }) {
     setIsOpen(false)
   }
 
+  const handleDelete = async () => {
+    if (confirm("DANGER: Are you sure you want to PERMANENTLY delete this client and all associated tasks? This action cannot be undone.")) {
+      setLoading(true)
+      const { deleteClient } = await import("@/lib/actions")
+      await deleteClient(client.id)
+      window.location.href = '/clients/all'
+    }
+  }
+
   return (
     <>
       <Button
@@ -120,6 +129,16 @@ export function EditClientModal({ client }: { client: any }) {
             className="w-full mt-4 bg-blue-600 hover:bg-blue-700 text-white rounded-xl py-5 font-medium shadow-md transition-all"
           >
             {loading ? "Saving..." : "Save Changes"}
+          </Button>
+
+          <Button
+            type="button"
+            variant="outline"
+            disabled={loading}
+            onClick={handleDelete}
+            className="w-full mt-3 border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700 hover:border-red-300 rounded-xl py-5 font-medium transition-all"
+          >
+            Delete Client
           </Button>
         </form>
       </Modal>

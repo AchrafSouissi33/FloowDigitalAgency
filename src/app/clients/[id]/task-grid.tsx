@@ -53,6 +53,9 @@ export function TaskGrid({ client, tasks }: { client: any, tasks: any[] }) {
 
     try {
       await updateTaskStatus(taskId, name, note)
+      if (role === "AM" && name === "Done") {
+        await archiveTask(taskId)
+      }
       // In a real app we'd refresh the data fully here or use optimistic UI.
       // Since this is a simple local app, we rely on Server Action revalidation 
       // which will refresh the page when the modal closes, or we can just update local state.
