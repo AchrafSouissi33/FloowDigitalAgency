@@ -159,10 +159,8 @@ export function WalkthroughClient({ initialClients }: { initialClients: any[] })
               return (
                 <div key={task.id} className="space-y-2">
                   <div
-                    className={`group flex items-center justify-between p-5 rounded-2xl bg-white border shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer ${
-                      role === "AM" ? "hover:border-blue-300" : "hover:border-blue-200"
-                    } ${isAcknowledged ? "border-emerald-200 bg-emerald-50/30" : "border-slate-200"}`}
-                    onClick={role === "AM" ? () => setSelectedTask(task) : () => toggleComments(task.id)}
+                    className={`group flex items-center justify-between p-5 rounded-2xl bg-white border shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer hover:border-blue-300 ${isAcknowledged ? "border-emerald-200 bg-emerald-50/30" : "border-slate-200"}`}
+                    onClick={() => setSelectedTask(task)}
                   >
                     <div className="flex items-center gap-4 flex-1 min-w-0">
                       <div className={`w-2 h-2 rounded-full shrink-0 ${isAcknowledged ? "bg-emerald-500" : "bg-blue-600/40"}`}></div>
@@ -365,9 +363,9 @@ export function WalkthroughClient({ initialClients }: { initialClients: any[] })
         </CardFooter>
       </Card>
 
-      {/* ---- AM Task Detail Modal ---- */}
+      {/* ---- Task Detail Modal ---- */}
       <Modal
-        isOpen={!!selectedTask && role === "AM"}
+        isOpen={!!selectedTask}
         onClose={() => setSelectedTask(null)}
         title="Task Details"
       >
@@ -386,7 +384,11 @@ export function WalkthroughClient({ initialClients }: { initialClients: any[] })
                 variant="outline"
                 size="sm"
                 onClick={async () => {
-                  await updateTaskStatus(selectedTask.id, "In Progress", "Continued working on task.");
+                  if (role === "PM") {
+                    await handleStatusUpdate(selectedTask.id, "working", "In Progress");
+                  } else {
+                    await updateTaskStatus(selectedTask.id, "In Progress", "Continued working on task.");
+                  }
                   setSelectedTask((prev: any) => prev ? { ...prev, status: "In Progress" } : prev);
                 }}
                 className={`text-xs rounded-xl border-sky-500/30 text-sky-700 hover:bg-sky-500/10 ${
@@ -399,8 +401,12 @@ export function WalkthroughClient({ initialClients }: { initialClients: any[] })
                 variant="outline"
                 size="sm"
                 onClick={async () => {
-                  const reason = prompt("Why is this task blocked?", "Awaiting client assets") || "Blocked";
-                  await updateTaskStatus(selectedTask.id, "Blocked", reason);
+                  if (role === "PM") {
+                    await handleStatusUpdate(selectedTask.id, "blocked", "Blocked");
+                  } else {
+                    const reason = prompt("Why is this task blocked?", "Awaiting client assets") || "Blocked";
+                    await updateTaskStatus(selectedTask.id, "Blocked", reason);
+                  }
                   setSelectedTask((prev: any) => prev ? { ...prev, status: "Blocked" } : prev);
                 }}
                 className={`text-xs rounded-xl border-red-500/30 text-red-600 hover:bg-red-500/10 ${
@@ -413,7 +419,11 @@ export function WalkthroughClient({ initialClients }: { initialClients: any[] })
                 variant="outline"
                 size="sm"
                 onClick={async () => {
-                  await updateTaskStatus(selectedTask.id, "Done", "Marked as completed.");
+                  if (role === "PM") {
+                    await handleStatusUpdate(selectedTask.id, "done", "Done");
+                  } else {
+                    await updateTaskStatus(selectedTask.id, "Done", "Marked as completed.");
+                  }
                   setSelectedTask((prev: any) => prev ? { ...prev, status: "Done" } : prev);
                 }}
                 className={`text-xs rounded-xl border-emerald-500/30 text-emerald-700 hover:bg-emerald-500/10 ${
@@ -422,19 +432,21 @@ export function WalkthroughClient({ initialClients }: { initialClients: any[] })
               >
                 Done
               </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={async () => {
-                  await updateTaskStatus(selectedTask.id, "You Can Proceed", "AM approved — you can proceed.");
-                  setSelectedTask((prev: any) => prev ? { ...prev, status: "You Can Proceed" } : prev);
-                }}
-                className={`text-xs rounded-xl border-violet-500/30 text-violet-700 hover:bg-violet-500/10 ${
-                  selectedTask.status === "You Can Proceed" ? "bg-violet-500/20" : "bg-white"
-                }`}
-              >
-                You Can Proceed
-              </Button>
+              {role === "AM" && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={async () => {
+                    await updateTaskStatus(selectedTask.id, "You Can Proceed", "AM approved — you can proceed.");
+                    setSelectedTask((prev: any) => prev ? { ...prev, status: "You Can Proceed" } : prev);
+                  }}
+                  className={`text-xs rounded-xl border-violet-500/30 text-violet-700 hover:bg-violet-500/10 ${
+                    selectedTask.status === "You Can Proceed" ? "bg-violet-500/20" : "bg-white"
+                  }`}
+                >
+                  You Can Proceed
+                </Button>
+              )}
             </div>
 
             {/* Notes */}
@@ -495,15 +507,16 @@ export function WalkthroughClient({ initialClients }: { initialClients: any[] })
                   <p className="text-xs text-slate-400 italic">No comments yet.</p>
                 )}
                 
-                {/* Comment form for AM */}
+                {/* Comment form */}
                 <form 
                   onSubmit={async (e) => {
                     e.preventDefault();
                     const form = e.currentTarget;
-                    const content = (form.elements.namedItem('amComment') as HTMLInputElement).value;
+                    const content = (form.elements.namedItem('taskComment') as HTMLInputElement).value;
                     if (!content.trim()) return;
                     try {
-                      await addComment(selectedTask.id, "Saif (AM)", content);
+                      const authorName = role === "PM" ? "Achraf (PM)" : "Saif (AM)";
+                      await addComment(selectedTask.id, authorName, content);
                       form.reset();
                     } catch (err) {
                       console.error(err);
@@ -512,8 +525,8 @@ export function WalkthroughClient({ initialClients }: { initialClients: any[] })
                   className="mt-3 border border-blue-200 rounded-2xl overflow-hidden bg-white shadow-sm focus-within:ring-2 focus-within:ring-blue-500/50"
                 >
                   <textarea 
-                    name="amComment"
-                    placeholder="Add a comment as Saif (AM)..."
+                    name="taskComment"
+                    placeholder={`Add a comment as ${role}...`}
                     className="w-full p-4 text-sm text-slate-700 bg-transparent focus:outline-none min-h-[70px] resize-y"
                   />
                   <div className="bg-slate-50 border-t border-slate-100 p-2 flex justify-between items-center">
@@ -526,8 +539,8 @@ export function WalkthroughClient({ initialClients }: { initialClients: any[] })
               </div>
             </div>
 
-            {/* Acknowledge from modal too */}
-            {!acknowledgedTasks[selectedTask.id] && (
+            {/* Acknowledge from modal too (AM only) */}
+            {role === "AM" && !acknowledgedTasks[selectedTask.id] && (
               <Button
                 onClick={() => { handleAcknowledge(selectedTask.id); setSelectedTask(null); }}
                 className="w-full bg-amber-500 hover:bg-amber-600 text-white rounded-xl py-5 font-medium shadow-md"
