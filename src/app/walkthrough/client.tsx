@@ -159,10 +159,10 @@ export function WalkthroughClient({ initialClients }: { initialClients: any[] })
               return (
                 <div key={task.id} className="space-y-2">
                   <div
-                    className={`group flex items-center justify-between p-5 rounded-2xl bg-white border shadow-sm hover:shadow-md transition-all duration-200 ${
-                      role === "AM" ? "cursor-pointer hover:border-blue-300" : "hover:border-blue-200"
+                    className={`group flex items-center justify-between p-5 rounded-2xl bg-white border shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer ${
+                      role === "AM" ? "hover:border-blue-300" : "hover:border-blue-200"
                     } ${isAcknowledged ? "border-emerald-200 bg-emerald-50/30" : "border-slate-200"}`}
-                    onClick={role === "AM" ? () => setSelectedTask(task) : undefined}
+                    onClick={role === "AM" ? () => setSelectedTask(task) : () => toggleComments(task.id)}
                   >
                     <div className="flex items-center gap-4 flex-1 min-w-0">
                       <div className={`w-2 h-2 rounded-full shrink-0 ${isAcknowledged ? "bg-emerald-500" : "bg-blue-600/40"}`}></div>
@@ -210,7 +210,7 @@ export function WalkthroughClient({ initialClients }: { initialClients: any[] })
                         </Button>
                       </div>
                     ) : (
-                      <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 ml-2">
+                      <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 ml-2" onClick={e => e.stopPropagation()}>
                         <Button
                           variant="outline"
                           size="sm"
