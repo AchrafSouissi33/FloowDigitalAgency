@@ -212,6 +212,16 @@ export function WalkthroughClient({ initialClients }: { initialClients: any[] })
                         <Button
                           variant="outline"
                           size="sm"
+                          onClick={() => setTaskStatuses(prev => ({ ...prev, [task.id]: "ok" }))}
+                          className={`text-xs rounded-xl border-amber-500/30 text-amber-700 hover:bg-amber-500/10 ${
+                            taskStatuses[task.id] === "ok" ? "bg-amber-500/20" : ""
+                          }`}
+                        >
+                          {taskStatuses[task.id] === "ok" ? "✓ OK" : "OK"}
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
                           onClick={() => handleStatusUpdate(task.id, "working", "In Progress")}
                           className={`text-xs rounded-xl border-sky-500/30 text-sky-700 hover:bg-sky-500/10 ${
                             taskStatuses[task.id] === "working" ? "bg-sky-500/20" : ""
